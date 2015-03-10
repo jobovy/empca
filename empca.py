@@ -87,7 +87,9 @@ class Model(object):
         #- Cache variance of unmasked data
         self._unmasked = ii
         self._unmasked_data_var = N.var(self.data[ii])
-        
+        self._unmasked_data_mad2 = N.sum(N.median(N.fabs(self.data[ii])\
+                                                      -N.median(self.data[ii]))**2.)
+                                         
         self.solve_coeffs()
         
     def solve_coeffs(self):
@@ -175,7 +177,7 @@ class Model(object):
         """Return the model using just eigvec i"""
         return N.outer(self.coeff[:, i], self.eigvec[i])
         
-    def R2vec(self, i):
+    def R2vec(self, i,mad=False):
         """
         Return fraction of data variance which is explained by vector i.
 
@@ -185,9 +187,15 @@ class Model(object):
         """
         
         d = self._model_vec(i) - self.data
-        return 1.0 - N.var(d[self._unmasked]) / self._unmasked_data_var
+        if mad:
+            med= N.median(d[self._unmasked])
+            return 1.0 - \
+                N.sum(N.median(N.fabs(d-med)[self._unmasked])**2.)\
+                /self._unmasked_data_mad2
+        else:
+            return 1.0 - N.var(d[self._unmasked]) / self._unmasked_data_var
         
-    def R2(self, nvec=None):
+    def R2(self, nvec=None,mad=False):
         """
         Return fraction of data variance which is explained by the first
         nvec vectors.  Default is R2 for all vectors.
@@ -206,7 +214,13 @@ class Model(object):
         d = mx - self.data
 
         #- Only consider R2 for unmasked data
-        return 1.0 - N.var(d[self._unmasked]) / self._unmasked_data_var
+        if mad:
+            med= N.median(d[self._unmasked])
+            return 1.0 - \
+                N.sum(N.median(N.fabs(d-med)[self._unmasked])**2.)/\
+                self._unmasked_data_mad2        
+        else:
+            return 1.0 - N.var(d[self._unmasked]) / self._unmasked_data_var
                 
 def _random_orthonormal(nvec, nvar, seed=1):
     """
