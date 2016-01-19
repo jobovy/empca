@@ -87,8 +87,9 @@ class Model(object):
         #- Cache variance of unmasked data
         self._unmasked = ii
         self._unmasked_data_var = N.var(self.data[ii])
-        self._unmasked_data_mad2 = N.sum(N.median(N.fabs(self.data[ii])\
-                                                      -N.median(self.data[ii]))**2.)
+        self._unmasked_data_mad2 =\
+            N.sum(N.median(N.fabs(self.data[ii]\
+                                      -N.median(self.data[ii])))**2.)
                                          
         self.solve_coeffs()
         
